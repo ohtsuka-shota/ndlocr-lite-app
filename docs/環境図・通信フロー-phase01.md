@@ -74,12 +74,12 @@ sequenceDiagram
 ```mermaid
 graph TD
     Start["リクエスト受信"]
-    IsPdf{".pdf ?"}
+    IsPdf{".pdf?"}
     Pdf2Image["pdf2image でページ展開"]
-    IsEngine{OcrEngine\nインポート可能?"}
-    Direct["Direct モード\nOcrEngine.run()"]
-    Sub["Subprocess モード\nocr.py を外部プロセスで実行"]
-    Parse["出力 JSON / TXT をパース\n（contents の二重リストをフラット化）"]
+    IsEngine{"OcrEngine import可能?"}
+    Direct["Direct モード / OcrEngine.run()"]
+    Sub["Subprocess モード / ocr.py を実行"]
+    Parse["出力 JSON / TXT をパース"]
     Response["レスポンス返却"]
 
     Start --> IsPdf
