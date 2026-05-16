@@ -1,0 +1,19 @@
+# Phase 1: NDLOCR-Lite 単体確認用
+# ndlocr コンテナだけ起動して OCR が動くことを確認する
+#
+# 起動: docker compose -f docker-compose.phase1.yml up --build
+# 確認: curl -X POST http://localhost:8080/ocr -F "file=@test.jpg"
+
+services:
+  ndlocr:
+    build: ./ndlocr
+    ports:
+      - "8080:8080"
+    environment:
+      - LOG_LEVEL=debug
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s

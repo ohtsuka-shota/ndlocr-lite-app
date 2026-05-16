@@ -1,0 +1,36 @@
+# 環境変数（絶対にgitに入れない）
+.env
+.env.local
+.env.*.local
+*.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Node
+node_modules/
+frontend/dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# ビルド成果物
+dist/
+build/
+
+# ログ
+*.log
+
+# テストファイル
+sample-file/*
