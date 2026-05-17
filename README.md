@@ -82,7 +82,8 @@ docker compose -f docker-compose.phase02.yml up -d
 | サービス | URL |
 |---------|-----|
 | フロントエンド | http://localhost:5173 |
-| ndlocr Swagger | http://localhost:8080/docs |
+| ヘルスチェック | http://localhost:8080/health |
+| Swagger UI | http://localhost:8080/docs |
 
 ## ディレクトリ構成
 
