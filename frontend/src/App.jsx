@@ -1,9 +1,10 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 
 const HINT_OPTIONS = ["名刺", "請求書", "見積書", "納品書", "領収書", "契約書", "帳票", "その他"];
 
 export default function App() {
   const [file, setFile] = useState(null);
+  const [aiEnabled, setAiEnabled] = useState(false);
   const [preview, setPreview] = useState(null);
   const [running, setRunning] = useState(false);
   const [correcting, setCorrecting] = useState(false);
@@ -14,6 +15,13 @@ export default function App() {
   const [activeTab, setActiveTab] = useState(null);
   const [copied, setCopied] = useState(false);
   const inputRef = useRef(null);
+
+  useEffect(() => {
+    fetch("/api/health")
+      .then((r) => r.json())
+      .then((data) => { if (data.provider) setAiEnabled(true); })
+      .catch(() => {});
+  }, []);
 
   const selectFile = (f) => {
     if (!f) return;
@@ -130,7 +138,7 @@ export default function App() {
           {running ? "⏳ OCR 実行中…" : "① OCR 実行"}
         </button>
 
-        {ocrResult && (
+        {ocrResult && aiEnabled && (
           <>
             <select
               style={s.select}
