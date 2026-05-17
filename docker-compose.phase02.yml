@@ -1,19 +1,15 @@
-# Phase 2: バックエンド API 確認用
-# backend + ndlocr を起動して curl で API を叩けることを確認する
-# フロントエンドは不要
+# Phase 2: frontend + ndlocr 確認用
+# frontend コンテナ（nginx）と ndlocr を起動してブラウザから OCR を確認する
 #
-# 起動: docker compose -f docker-compose.phase2.yml up --build
-# 確認: curl http://localhost:8000/health
-#       curl -X POST http://localhost:8000/ocr -F "file=@test.jpg"
-#       curl -X POST http://localhost:8000/correct \
-#            -H "Content-Type: application/json" \
-#            -d '{"text":"山囲 太郎\n株式会社サンプル","hint":"名刺"}'
+# 起動: docker compose -f docker-compose.phase02.yml up --build -d
+# API：curl -X POST http://localhost:8080/ocr -F "file=@test.pdf"
+# フロント: http://localhost:5173
 
 services:
   ndlocr:
     build: ./ndlocr
-    expose:
-      - "8080"                          # backend からのみアクセス・外部には出さない
+    ports:
+      - "8080:8080"
     environment:
       - LOG_LEVEL=debug
     healthcheck:
@@ -23,17 +19,12 @@ services:
       retries: 5
       start_period: 60s
 
-  backend:
-    build: ./backend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     ports:
-      - "8000:8000"
-    volumes:
-      - ./backend:/app                  # ホットリロード
-    environment:
-      - NDLOCR_URL=http://ndlocr:8080
-      - ANTHROPIC_KEY=${ANTHROPIC_KEY}
-      - LLM_MODEL=${LLM_MODEL:-claude-haiku-4-5-20251001}
+      - "5173:80"
     depends_on:
       ndlocr:
         condition: service_healthy
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload

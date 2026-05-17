@@ -1,26 +1,35 @@
 # ndlocr-lite-app
 
-NDLOCR-Lite（国立国会図書館製 OCR）と Claude API を組み合わせた OCR → AI校正 → JSON構造化パイプラインです。
+NDLOCR-Lite（国立国会図書館製 OCR）を使って画像・PDF からテキストを抽出する Web アプリです。
+
+## 現在の実装状況
+
+| フェーズ | 内容 | 状態 |
+|---------|------|------|
+| Phase 1 | ndlocr 単体 OCR API | ✅ 完了 |
+| Phase 2 | React UI + ndlocr 連携 | ✅ 完了 |
 
 ## ドキュメント
 
 - [環境図・通信フロー（Phase 1）](docs/環境図・通信フロー-phase01.md)
+- [環境図・通信フロー（Phase 2）](docs/環境図・通信フロー-phase02.md)
 
-## 機能
+## 機能（Phase 2 時点）
 
-- 画像・PDF をアップロードして OCR テキストを抽出
-- OCR テキストを Claude API で校正・JSON構造化
-- React UI またはREST API から利用可能
+- 画像・PDF をドラッグ＆ドロップまたはクリック選択でアップロード
+- PDF はブラウザ内プレビュー表示
+- OCR 実行でテキスト抽出
+- 結果をワンクリックでクリップボードにコピー
 
 ## システム構成
 
+### Phase 2（現在）
+
 ```
-[ブラウザ / REST クライアント]
-        ↓
-[frontend]  React + Vite  :5173（開発）/ :80（本番）
-        ↓ /api/* プロキシ
-[backend]   FastAPI        :8000  ← Claude API で校正・構造化
-        ↓
+[ブラウザ]
+    ↓ HTTP :5173
+[frontend]  React + nginx  :80
+    ↓ /api/* プロキシ
 [ndlocr]    FastAPI        :8080  ← NDLOCR-Lite OCR エンジン
 ```
 
@@ -42,9 +51,6 @@ GPU 不要・CPU のみで動作します。
 ```bash
 git clone https://github.com/ohtsuka-shota/ndlocr-lite-app.git
 cd ndlocr-lite-app
-
-cp .env.example .env
-# .env を開いて ANTHROPIC_KEY を記入
 ```
 
 ## 起動（フェーズ別）
@@ -66,64 +72,42 @@ docker compose -f docker-compose.phase01.yml up -d
 curl -X POST http://localhost:8080/ocr -F "file=@サンプル.pdf"
 ```
 
-### Phase 2 — バックエンド API 確認
+### Phase 2 — フロントエンド + ndlocr 確認
 
 ```bash
+docker compose -f docker-compose.phase02.yml build
 docker compose -f docker-compose.phase02.yml up -d
-```
-
-| エンドポイント | URL |
-|--------------|-----|
-| ヘルスチェック | http://localhost:8000/health |
-| Swagger UI | http://localhost:8000/docs |
-
-### Phase 3 — フルスタック（開発）
-
-```bash
-docker compose -f docker-compose.phase03.yml up -d
 ```
 
 | サービス | URL |
 |---------|-----|
 | フロントエンド | http://localhost:5173 |
-| バックエンド Swagger | http://localhost:8000/docs |
-
-## 環境変数
-
-| 変数名 | 説明 | デフォルト |
-|--------|------|-----------|
-| `ANTHROPIC_KEY` | Anthropic API キー（必須） | — |
-| `LLM_MODEL` | 使用モデル | `claude-haiku-4-5-20251001` |
-| `NDLOCR_URL` | ndlocr の URL | `http://ndlocr:8080` |
+| ndlocr Swagger | http://localhost:8080/docs |
 
 ## ディレクトリ構成
 
 ```
 ndlocr-lite-app/
-├── ndlocr/               # NDLOCR-Lite FastAPI ラッパー
+├── ndlocr/                    # NDLOCR-Lite FastAPI ラッパー
 │   ├── Dockerfile
 │   ├── server.py
 │   └── requirements-server.txt
-├── backend/              # LLM補正・中継 API
+├── frontend/                  # React UI
 │   ├── Dockerfile
-│   ├── main.py
-│   └── requirements.txt
-├── frontend/             # React UI
-│   ├── Dockerfile.dev
-│   ├── Dockerfile.prod
 │   ├── nginx.conf
 │   ├── vite.config.js
+│   ├── package.json
+│   ├── index.html
 │   └── src/
+│       ├── main.jsx
 │       └── App.jsx
 ├── docker-compose.phase01.yml
 ├── docker-compose.phase02.yml
-├── docker-compose.phase03.yml
-├── docker-compose.yml    # Phase 3 と同等（開発用）
 └── .env.example
 ```
 
 ## 停止
 
 ```bash
-docker compose -f docker-compose.phase01.yml down
+docker compose -f docker-compose.phase02.yml down
 ```
